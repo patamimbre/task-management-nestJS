@@ -4,6 +4,7 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TaskModel } from './task.model';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class TasksService {
@@ -13,48 +14,60 @@ export class TasksService {
     return this.prisma.task.findMany();
   }
 
-  // getTasksWithFilters({ search, status }: GetTasksFilterDto): Task[] {
-  //   let tasks = this.getAllTasks();
+  getTasksWithFilters({
+    search,
+    status,
+  }: GetTasksFilterDto): Promise<TaskModel[]> {
+    const where: Prisma.TaskWhereInput = {};
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: Prisma.QueryMode.insensitive } },
+        {
+          description: { contains: search, mode: Prisma.QueryMode.insensitive },
+        },
+      ];
+    }
+    if (status) {
+      where.status = status;
+    }
+    return this.prisma.task.findMany({ where });
+  }
 
-  //   if (status) {
-  //     tasks = tasks.filter((task) => task.status === status);
-  //   }
+  async getTaskById(id: string): Promise<TaskModel> {
+    const found = await this.prisma.task.findUnique({ where: { id } });
+    if (!found) throw new NotFoundException(`Task with ID "${id}" not found`);
+    return found;
+  }
 
-  //   if (search) {
-  //     tasks = tasks.filter(
-  //       (task) =>
-  //         task.title.includes(search) || task.description.includes(search),
-  //     );
-  //   }
+  async createTask(createTaskDto: CreateTaskDto): Promise<TaskModel> {
+    return this.prisma.task.create({ data: createTaskDto });
+  }
 
-  //   return tasks;
-  // }
+  deleteTask(id: string): Promise<TaskModel> {
+    return this.prisma.task.delete({ where: { id } }).catch((err) => {
+      if (err.code === 'P2025') {
+        // Task not found
+        throw new NotFoundException(`Task with ID "${id}" not found`);
+      }
+      throw err;
+    });
+  }
 
-  // getTaskById(id: string): Task {
-  //   const found = this.tasks.find((task) => task.id === id);
-  //   if (!found) throw new NotFoundException(`Task with ID "${id}" not found`);
-  //   return found;
-  // }
-
-  // createTask({ title, description }: CreateTaskDto): Task {
-  //   const task: Task = {
-  //     id: uuid(),
-  //     title,
-  //     description,
-  //     status: TaskStatus.OPEN,
-  //   };
-  //   this.tasks.push(task);
-  //   return task;
-  // }
-
-  // deleteTask(id: string): void {
-  //   const found = this.getTaskById(id);
-  //   this.tasks = this.tasks.filter((task) => task.id !== found.id);
-  // }
-
-  // updateTaskStatus(id: string, { status }: UpdateTaskStatusDto): Task {
-  //   const task = this.getTaskById(id);
-  //   task.status = status;
-  //   return task;
-  // }
+  updateTaskStatus(
+    id: string,
+    { status }: UpdateTaskStatusDto,
+  ): Promise<TaskModel> {
+    return this.prisma.task
+      .update({
+        where: { id },
+        data: { status },
+      })
+      .catch((err) => {
+        if (err.code === 'P2025') {
+          // Task not found
+          throw new NotFoundException(`Task with ID "${id}" not found`);
+        }
+        throw err;
+      });
+  }
 }
