@@ -1,3 +1,3 @@
-import { Task } from '@prisma/client';
+import { Task, TaskStatus } from '@prisma/client';
 
-export { Task as TaskModel };
+export { Task as TaskModel, TaskStatus };
