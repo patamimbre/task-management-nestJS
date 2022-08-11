@@ -11,10 +11,16 @@ datasource db {
 }
 
 model Task {
-  id          String  @id @default(uuid())
+  id          String        @id @default(uuid())
   title       String
   description String?
-  status      String   @default("OPEN")   // TODO(enum): convert to ENUM
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  status      TaskStatus    @default(OPEN)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+enum TaskStatus {
+  OPEN
+  IN_PROGRESS
+  DONE
 }
