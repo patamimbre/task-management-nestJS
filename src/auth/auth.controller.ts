@@ -1,20 +1,38 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Get,
+  Post,
+  Req,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { SignInUserDto } from './dto/signin-user.dto';
 import { SignUpUserDto } from './dto/signup-user.dto';
-import { CreatedUserModel } from './user.model';
+import { JwtResponse } from './jtw.interface';
+import { UserSerialized } from './user.model';
 
+@UseInterceptors(ClassSerializerInterceptor)
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('/signup')
-  signup(@Body() signupUserDto: SignUpUserDto): Promise<CreatedUserModel> {
+  signup(@Body() signupUserDto: SignUpUserDto): Promise<UserSerialized> {
     return this.authService.signUp(signupUserDto);
   }
 
   @Post('/signin')
-  signin(@Body() signinUserDto: SignInUserDto): Promise<boolean> {
+  signin(@Body() signinUserDto: SignInUserDto): Promise<JwtResponse> {
     return this.authService.signIn(signinUserDto);
+  }
+
+  @Get('/test')
+  @UseGuards(AuthGuard())
+  test(@Req() req) {
+    console.log(req);
   }
 }
