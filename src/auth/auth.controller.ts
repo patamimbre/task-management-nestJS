@@ -12,6 +12,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { SignInUserDto } from './dto/signin-user.dto';
 import { SignUpUserDto } from './dto/signup-user.dto';
+import { GetUser } from './get-user.decorator';
 import { JwtResponse } from './jtw.interface';
 import { UserSerialized } from './user.model';
 
@@ -28,11 +29,5 @@ export class AuthController {
   @Post('/signin')
   signin(@Body() signinUserDto: SignInUserDto): Promise<JwtResponse> {
     return this.authService.signIn(signinUserDto);
-  }
-
-  @Get('/test')
-  @UseGuards(AuthGuard())
-  test(@Req() req) {
-    console.log(req);
   }
 }

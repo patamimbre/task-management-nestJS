@@ -32,7 +32,7 @@ export class AuthService {
     });
 
     if (found && (await this.verifyPassword(password, found.password))) {
-      return this.generateJwtToken({ userId: found.id });
+      return this.generateJwtToken({ userId: found.id, username });
     } else {
       throw new UnauthorizedException('Invalid credentials');
     }
