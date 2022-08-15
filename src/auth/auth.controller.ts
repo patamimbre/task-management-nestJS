@@ -2,17 +2,12 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
-  Get,
   Post,
-  Req,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { SignInUserDto } from './dto/signin-user.dto';
 import { SignUpUserDto } from './dto/signup-user.dto';
-import { GetUser } from './get-user.decorator';
 import { JwtResponse } from './jtw.interface';
 import { UserSerialized } from './user.model';
 

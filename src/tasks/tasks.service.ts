@@ -10,15 +10,19 @@ import { Prisma } from '@prisma/client';
 export class TasksService {
   constructor(private prisma: PrismaService) {}
 
-  getAllTasks(): Promise<TaskModel[]> {
-    return this.prisma.task.findMany();
+  getAllTasks(userId: string): Promise<TaskModel[]> {
+    return this.prisma.task.findMany({
+      where: { userId },
+    });
   }
 
-  getTasksWithFilters({
-    search,
-    status,
-  }: GetTasksFilterDto): Promise<TaskModel[]> {
-    const where: Prisma.TaskWhereInput = {};
+  getTasksWithFilters(
+    { search, status }: GetTasksFilterDto,
+    userId: string,
+  ): Promise<TaskModel[]> {
+    const where: Prisma.TaskWhereInput = {
+      AND: [{ userId }],
+    };
     if (search) {
       where.OR = [
         { title: { contains: search, mode: Prisma.QueryMode.insensitive } },
@@ -33,24 +37,30 @@ export class TasksService {
     return this.prisma.task.findMany({ where });
   }
 
-  async getTaskById(id: string): Promise<TaskModel> {
-    return this.prisma.task.findUnique({ where: { id } });
+  async getTaskById(id: string, userId: string): Promise<TaskModel> {
+    return this.prisma.task.findUnique({
+      where: { id_userId: { id, userId } },
+    });
   }
 
-  async createTask(createTaskDto: CreateTaskDto): Promise<TaskModel> {
-    return this.prisma.task.create({ data: createTaskDto });
+  async createTask(
+    createTaskDto: CreateTaskDto,
+    userId: string,
+  ): Promise<TaskModel> {
+    return this.prisma.task.create({ data: { ...createTaskDto, userId } });
   }
 
-  deleteTask(id: string): Promise<TaskModel> {
-    return this.prisma.task.delete({ where: { id } });
+  deleteTask(id: string, userId: string): Promise<TaskModel> {
+    return this.prisma.task.delete({ where: { id_userId: { id, userId } } });
   }
 
   updateTaskStatus(
     id: string,
     { status }: UpdateTaskStatusDto,
+    userId: string,
   ): Promise<TaskModel> {
     return this.prisma.task.update({
-      where: { id },
+      where: { id_userId: { id, userId } },
       data: { status },
     });
   }
