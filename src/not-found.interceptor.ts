@@ -12,7 +12,7 @@ class NotFoundInterceptor implements NestInterceptor {
   intercept(_: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
       tap((data) => {
-        if (!data) throw new NotFoundException();
+        if (data === null || data === undefined) throw new NotFoundException();
       }),
     );
   }
