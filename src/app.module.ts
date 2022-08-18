@@ -3,8 +3,15 @@ import { PrismaModule } from './prisma/prisma.module';
 import { TasksModule } from './tasks/tasks.module';
 import { AuthModule } from './auth/auth.module';
 import { LoggerModule } from 'nestjs-pino';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [TasksModule, PrismaModule, AuthModule, LoggerModule.forRoot()],
+  imports: [
+    ConfigModule.forRoot(),
+    LoggerModule.forRoot(),
+    TasksModule,
+    PrismaModule,
+    AuthModule,
+  ],
 })
 export class AppModule {}

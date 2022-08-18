@@ -13,7 +13,7 @@ import { JwtModule } from '@nestjs/jwt';
     PrismaModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
-      secret: 'MySuperSecretKey', // TODO(env) move to env
+      secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '1h' },
     }),
   ],
