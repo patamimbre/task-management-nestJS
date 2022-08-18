@@ -1,11 +1,15 @@
 import { ValidationPipe } from '@nestjs/common';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
+import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import NotFoundInterceptor from './not-found.interceptor';
 import { PrismaClientExceptionFilter } from './prisma/prisma-client-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.useLogger(app.get(Logger));
+
   app.useGlobalPipes(new ValidationPipe());
 
   // To convert undefined values to NotFound responses

@@ -1,7 +1,7 @@
 import { JwtPayload, JwtResponse } from './jtw.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SignUpUserDto } from './dto/signup-user.dto';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import * as argon2 from 'argon2';
 import { SignInUserDto } from './dto/signin-user.dto';
 import { JwtService } from '@nestjs/jwt';
@@ -9,6 +9,8 @@ import { UserSerialized } from './user.model';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
@@ -23,7 +25,9 @@ export class AuthService {
       },
     });
 
-    return new UserSerialized(createdUser);
+    const user = new UserSerialized(createdUser);
+    this.logger.log(`User ${user.username} signed up`, user);
+    return user;
   }
 
   async signIn({ username, password }: SignInUserDto): Promise<JwtResponse> {
@@ -32,8 +36,10 @@ export class AuthService {
     });
 
     if (found && (await this.verifyPassword(password, found.password))) {
+      this.logger.log(`User ${username} signed in`);
       return this.generateJwtToken({ userId: found.id, username });
     } else {
+      this.logger.log(`User ${username} failed to sign in`);
       throw new UnauthorizedException('Invalid credentials');
     }
   }
